@@ -1,48 +1,74 @@
 # Task Priority API
 
-Micro-API para gestao de tarefas com priorizacao assistida por IA.
+Micro-API de tarefas para uso interno de equipe, construída com FastAPI e priorização assistida por IA.
 
 ## Objetivo
 
-Este projeto tem como objetivo entregar um MVP de API para cadastro, consulta e organizacao de tarefas, com suporte a priorizacao assistida por IA.
+O projeto entrega um MVP para cadastro, consulta, atualização e remoção de tarefas, com sugestão automática de prioridade.
 
-A proposta e ajudar usuarios ou sistemas consumidores a identificar quais tarefas merecem mais atencao com base em criterios como urgencia, impacto, prazo e contexto informado.
+A prioridade pode ser definida por heurística local ou, quando houver chave configurada, por chamada opcional a um provedor LLM. Em caso de falha externa, timeout ou ausência de chave, a API usa fallback local para manter o funcionamento sem custo obrigatório de IA.
 
 ## Stack
 
 - Python 3.13
 - FastAPI
+- Pydantic v2
 - Uvicorn
-- Pydantic
 - Pytest
+- HTTPX
 - Ambiente virtual com `venv`
 
-## Funcionalidades previstas no MVP
+## Arquitetura
 
-- Criar tarefas
-- Listar tarefas
-- Consultar uma tarefa por identificador
-- Atualizar status, titulo, descricao e prazo
-- Remover tarefas
-- Classificar prioridade da tarefa com apoio de IA
-- Expor documentacao interativa via Swagger/OpenAPI
+O projeto segue uma separação simples por camadas:
 
-## Como rodar localmente
+```text
+app/
+  api/          # Rotas HTTP FastAPI
+  models/       # Schemas Pydantic e tipos de domínio
+  repository/   # Persistência em memória
+  services/     # Regras de negócio e priorização
+  main.py       # Instância FastAPI e registro de routers
+tests/          # Testes automatizados
+docs/           # Documentação técnica do MVP
+```
 
-### 1. Clonar o repositorio
+Fluxo principal:
+
+```text
+Cliente -> API Routes -> TaskService -> TaskRepository
+                         |
+                         -> PriorityAdvisor -> LLM opcional ou heurística local
+```
+
+## Funcionalidades
+
+- Health check da aplicação
+- Criação de tarefas
+- Listagem de tarefas
+- Consulta de tarefa por ID
+- Atualização de tarefa
+- Remoção de tarefa
+- Sugestão automática de prioridade
+- Fallback local quando IA externa não estiver disponível
+- Documentação interativa via Swagger/OpenAPI
+
+## Instalação
+
+### 1. Clonar o repositório
 
 ```bash
 git clone <url-do-repositorio>
 cd <nome-do-repositorio>
 ```
 
-### 2. Criar o ambiente virtual
+### 2. Criar ambiente virtual
 
 ```bash
 python3 -m venv .venv
 ```
 
-### 3. Ativar o ambiente virtual
+### 3. Ativar ambiente virtual
 
 Linux/macOS:
 
@@ -56,91 +82,195 @@ Windows:
 .venv\Scripts\activate
 ```
 
-### 4. Instalar dependencias
-
-```bash
-pip install fastapi uvicorn pytest
-```
-
-Quando o arquivo `requirements.txt` estiver disponivel, use:
+### 4. Instalar dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 5. Rodar a API
+Se o sistema não tiver suporte a `venv` ou `pip`, instale antes:
+
+```bash
+sudo apt install -y python3.13-venv python3-pip
+```
+
+## Execução
+
+Para iniciar a API em modo desenvolvimento:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-A API ficara disponivel em:
+API local:
 
 ```text
 http://localhost:8000
 ```
 
-Documentacao interativa:
+Swagger/OpenAPI:
 
 ```text
 http://localhost:8000/docs
 ```
 
-## Variaveis de ambiente
+## Endpoints
 
-Crie um arquivo `.env` na raiz do projeto para configuracoes locais.
+### Health check
 
-Exemplo:
-
-```env
-APP_ENV=local
-APP_NAME=Task Priority API
-AI_PROVIDER=openai
-AI_MODEL=<modelo-de-ia>
-AI_API_KEY=<sua-chave>
+```http
+GET /health
 ```
 
-O arquivo `.env` nao deve ser versionado. Use `.env.example` para compartilhar variaveis esperadas sem expor segredos.
+Resposta esperada:
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-05-03T12:00:00+00:00"
+}
+```
+
+### Criar tarefa
+
+```http
+POST /tasks
+```
+
+Exemplo de payload:
+
+```json
+{
+  "title": "Revisar backlog da sprint",
+  "description": "Organizar tarefas prioritárias para o time",
+  "status": "pending",
+  "priority": "medium"
+}
+```
+
+Status esperado: `201 Created`
+
+### Listar tarefas
+
+```http
+GET /tasks
+```
+
+Status esperado: `200 OK`
+
+### Consultar tarefa por ID
+
+```http
+GET /tasks/{task_id}
+```
+
+Status esperado:
+
+- `200 OK` quando a tarefa existir
+- `404 Not Found` quando a tarefa não existir
+
+### Atualizar tarefa
+
+```http
+PUT /tasks/{task_id}
+```
+
+Status esperado:
+
+- `200 OK` quando a tarefa existir
+- `404 Not Found` quando a tarefa não existir
+
+### Remover tarefa
+
+```http
+DELETE /tasks/{task_id}
+```
+
+Status esperado:
+
+- `204 No Content` quando a tarefa existir
+- `404 Not Found` quando a tarefa não existir
+
+## Uso de IA
+
+O componente `PriorityAdvisor` sugere prioridade para tarefas.
+
+Quando `OPENAI_API_KEY` não estiver configurada, a priorização usa heurística local baseada em termos encontrados no título e na descrição da tarefa.
+
+Quando `OPENAI_API_KEY` estiver configurada, o componente tenta uma chamada opcional à API de LLM. A chamada possui timeout e fallback obrigatório para a heurística local.
+
+Variáveis suportadas:
+
+```env
+OPENAI_API_KEY=<sua-chave>
+OPENAI_MODEL=gpt-4.1-mini
+```
+
+Comportamento de fallback:
+
+- Sem chave: usa heurística local
+- Timeout: usa heurística local
+- Erro de rede: usa heurística local
+- Resposta inválida da LLM: usa heurística local
+
+Prioridades suportadas:
+
+- `low`
+- `medium`
+- `high`
+- `urgent`
 
 ## Testes
 
-Para executar os testes:
+Para executar todos os testes:
 
 ```bash
-pytest
+pytest -q
 ```
 
-## Roadmap de release
+Ou usando explicitamente o Python do ambiente virtual:
 
-### v0.1.0 - Base da API
+```bash
+.venv/bin/python -m pytest -q
+```
 
-- Estrutura inicial do projeto FastAPI
-- Endpoint de health check
-- Modelo inicial de tarefa
-- Rotas basicas de CRUD em memoria
-- README e configuracoes iniciais de desenvolvimento
+Cobertura atual dos testes:
 
-### v0.2.0 - Persistencia e validacoes
+- `TaskService`
+- `PriorityAdvisor`
+- Rotas CRUD de `/tasks`
+- Status HTTP `201`, `200`, `204` e `404`
+- Fallback de priorização quando chamada externa falha
 
-- Persistencia em banco de dados
-- Configuracao por variaveis de ambiente
-- Validacoes de entrada com Pydantic
-- Testes unitarios para regras principais
+## Documentação técnica
 
-### v0.3.0 - Priorizacao assistida por IA
+Arquivos complementares:
 
-- Integracao com provedor de IA
-- Endpoint para sugerir prioridade de tarefas
-- Criterios de priorizacao configuraveis
-- Tratamento de falhas na chamada externa de IA
+- `docs/escopo-mvp.md`
+- `docs/backlog.md`
+- `docs/diagrama-componentes.md`
 
-### v0.4.0 - Pronto para homologacao
+## Limitações
 
-- Logs estruturados
-- Testes de integracao
-- Documentacao dos endpoints
-- Ajustes de seguranca e configuracao para deploy
+- Persistência em memória: os dados são perdidos ao reiniciar a aplicação.
+- Não há autenticação ou autorização.
+- Não há paginação, filtros avançados ou ordenação.
+- Não há banco de dados configurado.
+- Não há deploy de produção definido.
+- A integração com LLM é opcional e possui fallback local.
+- O objetivo atual é validar o fluxo do MVP, não operar em produção.
+
+## Próximos passos
+
+- Adicionar banco de dados para persistência real.
+- Criar camada de configuração centralizada.
+- Adicionar autenticação para uso interno.
+- Implementar filtros de listagem por status, prioridade e prazo.
+- Melhorar observabilidade com logs estruturados.
+- Expandir testes de integração.
+- Criar pipeline de CI para rodar testes automaticamente.
+- Preparar configuração de deploy.
 
 ## Status do projeto
 
-Projeto em fase inicial de MVP.
+MVP em desenvolvimento, com CRUD inicial, testes automatizados e priorização assistida com fallback seguro.
