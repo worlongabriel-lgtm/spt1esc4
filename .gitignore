@@ -31,6 +31,7 @@ dist/
 .env
 .env.*
 !.env.example
+checklist-proxima-release.txt
 
 # Editor and IDE settings
 .vscode/
