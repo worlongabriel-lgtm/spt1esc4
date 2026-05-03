@@ -1,8 +1,15 @@
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Response, status
 
-from app.models.task import TaskCreate, TaskOut, TaskUpdate
+from app.models.task import (
+    TaskCreate,
+    TaskOut,
+    TaskPriority,
+    TaskStatus,
+    TaskUpdate,
+)
 from app.repository.task_repository import TaskRepository
 from app.services.priority_advisor import PriorityAdvisor
 from app.services.task_service import TaskService
@@ -31,9 +38,17 @@ def create_task(payload: TaskCreate) -> TaskOut:
     response_model=list[TaskOut],
     status_code=status.HTTP_200_OK,
 )
-def list_tasks() -> list[TaskOut]:
-    """List tasks."""
-    return task_service.list()
+def list_tasks(
+    status: TaskStatus | None = None,
+    priority: TaskPriority | None = None,
+    due_date: datetime | None = None,
+) -> list[TaskOut]:
+    """List tasks with optional filters."""
+    return task_service.list(
+        status=status,
+        priority=priority,
+        due_date=due_date,
+    )
 
 
 @router.get(

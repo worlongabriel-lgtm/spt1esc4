@@ -1,6 +1,13 @@
+from datetime import datetime
 from uuid import UUID
 
-from app.models.task import TaskCreate, TaskOut, TaskUpdate
+from app.models.task import (
+    TaskCreate,
+    TaskOut,
+    TaskPriority,
+    TaskStatus,
+    TaskUpdate,
+)
 from app.repository.task_repository import TaskRepository
 from app.services.priority_advisor import PriorityAdvisor
 
@@ -21,8 +28,17 @@ class TaskService:
         task_data = payload.model_copy(update={"priority": priority})
         return self._repository.create(task_data)
 
-    def list(self) -> list[TaskOut]:
-        return self._repository.list()
+    def list(
+        self,
+        status: TaskStatus | None = None,
+        priority: TaskPriority | None = None,
+        due_date: datetime | None = None,
+    ) -> list[TaskOut]:
+        return self._repository.list(
+            status=status,
+            priority=priority,
+            due_date=due_date,
+        )
 
     def get_by_id(self, task_id: UUID) -> TaskOut | None:
         return self._repository.get_by_id(task_id)

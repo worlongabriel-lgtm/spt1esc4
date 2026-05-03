@@ -1,7 +1,13 @@
 from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
-from app.models.task import TaskCreate, TaskOut, TaskUpdate
+from app.models.task import (
+    TaskCreate,
+    TaskOut,
+    TaskPriority,
+    TaskStatus,
+    TaskUpdate,
+)
 
 
 class TaskRepository:
@@ -22,8 +28,28 @@ class TaskRepository:
         self._tasks[task.id] = task
         return task
 
-    def list(self) -> list[TaskOut]:
-        return list(self._tasks.values())
+    def list(
+        self,
+        status: TaskStatus | None = None,
+        priority: TaskPriority | None = None,
+        due_date: datetime | None = None,
+    ) -> list[TaskOut]:
+        tasks = list(self._tasks.values())
+
+        if status is None and priority is None and due_date is None:
+            return tasks
+
+        filtered: list[TaskOut] = []
+        for task in tasks:
+            if status is not None and task.status != status:
+                continue
+            if priority is not None and task.priority != priority:
+                continue
+            if due_date is not None and task.due_date != due_date:
+                continue
+            filtered.append(task)
+
+        return filtered
 
     def get_by_id(self, task_id: UUID) -> TaskOut | None:
         return self._tasks.get(task_id)

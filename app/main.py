@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from datetime import UTC, datetime
 
 from fastapi import FastAPI

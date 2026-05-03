@@ -61,6 +61,52 @@ def test_list_tasks_returns_200(
     assert response.json() == [created_task]
 
 
+def test_health_check_returns_ok(client: TestClient) -> None:
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+    assert "timestamp" in response.json()
+
+
+def test_list_tasks_supports_filters(
+    client: TestClient,
+    task_payload: dict[str, str],
+) -> None:
+    first_task = client.post("/tasks", json=task_payload).json()
+    second_task = client.post(
+        "/tasks",
+        json={
+            "title": "Revisar documento",
+            "description": "Analisar as notas da reunião",
+            "due_date": "2099-12-31T00:00:00Z",
+        },
+    ).json()
+
+    client.put(
+        f"/tasks/{second_task['id']}",
+        json={"status": "in_progress", "priority": "urgent"},
+    )
+
+    response_by_status = client.get("/tasks", params={"status": "in_progress"})
+    assert response_by_status.status_code == 200
+    assert len(response_by_status.json()) == 1
+    assert response_by_status.json()[0]["id"] == second_task["id"]
+
+    response_by_priority = client.get("/tasks", params={"priority": "urgent"})
+    assert response_by_priority.status_code == 200
+    assert len(response_by_priority.json()) == 1
+    assert response_by_priority.json()[0]["id"] == second_task["id"]
+
+    response_by_due_date = client.get(
+        "/tasks",
+        params={"due_date": "2099-12-31T00:00:00Z"},
+    )
+    assert response_by_due_date.status_code == 200
+    assert len(response_by_due_date.json()) == 1
+    assert response_by_due_date.json()[0]["id"] == second_task["id"]
+
+
 def test_get_task_by_id_returns_200(
     client: TestClient,
     task_payload: dict[str, str],

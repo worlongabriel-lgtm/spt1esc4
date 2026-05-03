@@ -1,0 +1,177 @@
+### Task Priority API - Exemplos REST
+
+@baseUrl = http://localhost:8000
+
+###
+### 1. Health Check
+GET {{baseUrl}}/health
+
+###
+### 2. Criar uma tarefa urgente
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Resolver incidente crítico de produção",
+  "description": "Falha no serviço de autenticação bloqueando todos os usuários",
+  "status": "pending"
+}
+
+###
+### 3. Criar uma tarefa de alta prioridade
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Revisar pull request do cliente",
+  "description": "Validar mudanças antes do merge para produção",
+  "status": "pending",
+  "due_date": "2026-05-04T18:00:00Z"
+}
+
+###
+### 4. Criar uma tarefa com data futura
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Atualizar documentação da API",
+  "description": "Adicionar exemplos e melhorar instruções de instalação",
+  "status": "pending",
+  "due_date": "2026-05-10T00:00:00Z"
+}
+
+###
+### 5. Listar todas as tarefas
+GET {{baseUrl}}/tasks
+
+###
+### 6. Listar tarefas com status pending
+GET {{baseUrl}}/tasks?status=pending
+
+###
+### 7. Listar tarefas com status in_progress
+GET {{baseUrl}}/tasks?status=in_progress
+
+###
+### 8. Listar tarefas com status done
+GET {{baseUrl}}/tasks?status=done
+
+###
+### 9. Filtrar tarefas por prioridade urgent
+GET {{baseUrl}}/tasks?priority=urgent
+
+###
+### 10. Filtrar tarefas por prioridade high
+GET {{baseUrl}}/tasks?priority=high
+
+###
+### 11. Filtrar tarefas por prioridade medium
+GET {{baseUrl}}/tasks?priority=medium
+
+###
+### 12. Filtrar tarefas por prioridade low
+GET {{baseUrl}}/tasks?priority=low
+
+###
+### 13. Listar tarefas e pegar o ID da primeira (será usado nos exemplos seguintes)
+# Execute este request e copie o "id" da primeira tarefa
+GET {{baseUrl}}/tasks
+
+###
+### 14. Consultar tarefa específica por ID
+# Substitua {task_id} pelo ID obtido no request anterior
+GET {{baseUrl}}/tasks/284d3116-8c28-4e3e-b23f-a608dbe385fa
+
+###
+### 15. Atualizar tarefa - mudar status para in_progress
+PUT {{baseUrl}}/tasks/284d3116-8c28-4e3e-b23f-a608dbe385fa
+Content-Type: application/json
+
+{
+  "status": "in_progress"
+}
+
+###
+### 16. Atualizar tarefa - mudar prioridade
+PUT {{baseUrl}}/tasks/284d3116-8c28-4e3e-b23f-a608dbe385fa
+Content-Type: application/json
+
+{
+  "priority": "urgent"
+}
+
+###
+### 17. Atualizar tarefa - mudar status para done
+PUT {{baseUrl}}/tasks/284d3116-8c28-4e3e-b23f-a608dbe385fa
+Content-Type: application/json
+
+{
+  "status": "done"
+}
+
+###
+### 18. Atualizar múltiplos campos de uma tarefa
+PUT {{baseUrl}}/tasks/284d3116-8c28-4e3e-b23f-a608dbe385fa
+Content-Type: application/json
+
+{
+  "title": "Resolver incidente - RESOLVIDO",
+  "description": "Falha foi corrigida e testada",
+  "status": "done",
+  "priority": "low"
+}
+
+###
+### 19. Deletar uma tarefa
+DELETE {{baseUrl}}/tasks/284d3116-8c28-4e3e-b23f-a608dbe385fa
+
+###
+### 20. Tentar consultar tarefa deletada (retorna 404)
+GET {{baseUrl}}/tasks/284d3116-8c28-4e3e-b23f-a608dbe385fa
+
+###
+### 21. Teste: UUID inválido (retorna 422)
+GET {{baseUrl}}/tasks/invalid-uuid
+
+###
+### 22. Teste: Tarefa não existente (retorna 404)
+GET {{baseUrl}}/tasks/00000000-0000-0000-0000-000000000000
+
+###
+### 23. Teste: Status inválido na criação (retorna 422)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Teste de validação",
+  "status": "invalid_status"
+}
+
+###
+### 24. Teste: Título vazio (retorna 422)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "",
+  "description": "Tarefa com título vazio"
+}
+
+###
+### 25. Teste: Data no passado (retorna 422)
+POST {{baseUrl}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Tarefa atrasada",
+  "due_date": "2020-01-01T00:00:00Z"
+}
+
+###
+### 26. Swagger/OpenAPI - Documentação interativa
+GET {{baseUrl}}/docs
+
+###
+### 27. ReDoc - Documentação alternativa
+GET {{baseUrl}}/redoc
