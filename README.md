@@ -54,6 +54,7 @@ docs/                     # Documentação técnica
   escopo-mvp.md
   backlog.md
   diagrama-componentes.md
+  analise-de-riscos.md
 
 examples.py               # Script de exemplos em Python
 examples.http             # Exemplos REST Client
