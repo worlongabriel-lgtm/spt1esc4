@@ -1,62 +1,53 @@
 # Relatório Executivo para Stakeholders
 
-## Visão Geral
-Este documento apresenta, em termos não técnicos, o propósito, o valor e o status atual do projeto "Task Priority API" — uma micro-API para gerenciamento de tarefas com sugestão automática de prioridade.
+## Resumo Executivo
+O projeto Task Priority API foi estruturado para resolver uma necessidade operacional clara: melhorar a organização, a priorização e o acompanhamento de tarefas internas com apoio automatizado de decisão. O MVP já demonstra a viabilidade do conceito, com gestão de tarefas, filtros por status e prioridade, e uma lógica de priorização que pode operar com regras locais ou com apoio de IA quando houver configuração adequada.
 
 ## Objetivo do Projeto
-Entregar um serviço simples, testável e confiável para criação, acompanhamento e priorização de tarefas internas. A priorização é assistida por uma heurística local e pode usar IA externamente quando configurada.
+Disponibilizar uma solução simples, confiável e escalável para apoiar a gestão de demandas internas, reduzir atrasos na execução, e permitir que a equipe foque nas tarefas mais críticas e com maior impacto para o negócio.
 
-## Por que isso importa para o negócio
-- Melhora a alocação de recursos ao destacar tarefas mais críticas.
-- Reduz o tempo de decisão operacional ao sugerir prioridades automaticamente.
-- Permite rastreabilidade e filtros por status, prioridade e prazo.
-- Projeto pronto para evoluir para armazenamento persistente e integração com outras ferramentas.
+## Valor Gerado para a Organização
+- Redução do tempo de tomada de decisão sobre o que precisa ser resolvido primeiro.
+- Maior visibilidade sobre pendências, prazos e prioridade operacional.
+- Organização do trabalho por critério de urgência e impacto.
+- Base para expansão para integrações futuras com outras áreas e sistemas.
 
-## Benefícios Esperados
-- Maior agilidade na resolução de incidentes críticos.
-- Priorização consistente e auditável de atividades.
-- Integração simples via API com sistemas internos (ferramentas de atendimento, dashboards, etc.).
+## Status Atual
+O projeto encontra-se em fase de MVP funcional, com os seguintes componentes já implementados:
+- criação, leitura, atualização e remoção de tarefas;
+- classificação automática por prioridade;
+- filtros por status, prioridade e data de vencimento;
+- documentação de API e exemplos de uso;
+- testes automatizados para validar o comportamento principal.
 
-## Principais Funcionalidades (resumo)
-- Criar, listar, atualizar e remover tarefas.
-- Sugestão automática de prioridade (low/medium/high/urgent).
-- Filtros por status, prioridade e data de vencimento.
-- Interface de API documentada (Swagger/OpenAPI) para testes e integração.
+## Modelo de Operação
+A solução aceita tarefas com título, descrição e prazo, e sugere automaticamente uma prioridade com base no conteúdo informado. A priorização pode funcionar sem custo adicional por meio de regras locais e, opcionalmente, pode recorrer a serviços de IA para apoiar a classificação em cenários mais complexos.
 
-## Como Funciona (sem jargão técnico)
-- Equipe ou sistema cria uma tarefa informando título, descrição e prazo opcional.
-- A aplicação sugere uma prioridade com base no texto informado. Se disponível, pode consultar um serviço de IA para uma sugestão adicional; caso contrário, usa regras locais.
-- A tarefa fica armazenada e pode ser consultada, filtrada ou atualizada por outras partes da organização.
+## Oportunidades e Riscos
+### Oportunidades
+- Aumentar a produtividade da equipe com priorização mais objetiva.
+- Apoiar a gestão de incidentes, demandas operacionais e projetos internos.
+- Criar uma base de dados e fluxos que podem evoluir para uma solução mais integrada.
 
-## Estado Atual (MVP)
-- Núcleo funcional implementado e testado com foco em qualidade.
-- Priorização funciona com heurística local; integração com OpenAI é opcional mediante configuração de chave.
-- Persistência está em memória no MVP; plano para migrar a um banco relacional está no backlog.
-- Documentação de API e exemplos prontos para execução local.
-
-## Limitações e Riscos
-- Persistência em memória: dados não sobrevivem reinícios — não indicado para produção ainda.
-- Dependência opcional de serviço de IA externo: se ativado, gera custo e requer gestão de chaves e privacidade dos dados.
-- Validação de entrada é feita, mas a maturidade para carga alta ainda não foi testada.
-
-## Mitigações Propostas
-- Priorizar a implementação de persistência (SQLite/Postgres) para garantir durabilidade.
-- Avaliar governança de uso de IA (privacidade, custos, limites de taxa) antes de ativar em produção.
-- Incluir monitoramento e testes de carga após migração para banco de dados.
+### Riscos e Limitações
+- Persistência atual em memória: não é adequada para ambiente produtivo sem evolução da camada de dados.
+- Uso de IA depende de governança, custos e regras de privacidade.
+- Necessidade de maior maturidade em testes de carga e operação em produção.
 
 ## Próximos Passos Recomendados
-1. Decisão executiva: habilitar persistência e ambiente de homologação.
-2. Planejar migração para banco relacional (escopo e responsáveis).
-3. Definir política de uso de IA (quais dados podem ser enviados, limites e custos).
-4. Criar documentação de integração para equipes consumidoras.
+1. Definir a etapa de persistência em banco de dados como prioridade estratégica.
+2. Validar a arquitetura de homologação antes de expansão para uso real.
+3. Estabelecer política de uso de IA, incluindo segurança, custos e regras de dados.
+4. Expandir a documentação de integração para áreas consumidoras da funcionalidade.
+5. Planejar a migração para produção com monitoramento e critérios de sucesso claros.
 
-## Prazo Estimado para Produção (exemplo)
-- MVP atual → Homologação com persistência: 2–4 semanas (dependendo de prioridades e disponibilidade).
-- Homologação → Produção: 1–2 semanas adicionais (testes, monitoramento e rollout gradual).
+## Cronograma Indicativo
+- MVP atual: concluído em escopo funcional.
+- Homologação com persistência: 2 a 4 semanas, considerando disponibilidade de time e definição de requisitos.
+- Produção: 1 a 2 semanas adicionais para testes, monitoramento e rollout controlado.
 
-## Contatos e Responsáveis
-- Time de desenvolvimento: repositório interno (código-fonte e testes automatizados).
-- Para dúvidas e priorização de roadmap: indicar sponsor/PO responsável.
+## Conclusão
+O projeto já demonstrou viabilidade técnica e valor operacional relevante para a organização. O próximo passo crítico é transformar o MVP em uma solução mais robusta para uso em ambiente real, com persistência, governança e preparação para operação em produção.
 
 ---
-Documento gerado automaticamente a partir do estado atual do repositório. Se desejar, ajusto o tom, adiciono um resumo executivo ainda mais curto ou incluo cronograma detalhado e estimativas de esforço.
+Este documento foi elaborado com foco em tomada de decisão executiva e acompanhamento estratégico do projeto.
