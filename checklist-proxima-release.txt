@@ -1,0 +1,23 @@
+# Checklist Técnico - Próxima Release
+
+## Riscos Técnicos na Arquitetura Atual
+
+- **Persistência em memória:** Risco mais crítico. A perda de todos os dados ao reiniciar a API impede o uso em produção.
+- **Ausência de autenticação/autorização:** A API está totalmente exposta, permitindo que qualquer pessoa crie, modifique ou apague tarefas.
+- **Estado compartilhado nos testes:** Os testes de integração (`test_task_routes.py`) dependem de um estado global do repositório que não é isolado entre os testes, podendo levar a resultados inconsistentes.
+- **Falta de paginação:** A rota `GET /tasks` pode causar problemas de performance e consumo de memória se o volume de tarefas crescer.
+- **Configuração de IA fixa:** O modelo e o timeout da OpenAI estão fixos no código, dificultando a alteração sem deploy.
+
+## Gaps na Cobertura de Testes
+
+- **Testes de carga:** Não há testes para verificar como a API se comporta com um grande número de requisições simultâneas.
+- **Testes de contrato:** Faltam testes para garantir que a API não quebre a compatibilidade com os clientes após uma atualização.
+- **Testes de segurança:** Não há validação contra vulnerabilidades comuns (ex: injeção de dados nos campos de texto).
+- **Testes de mutação:** Não foram executados para garantir a qualidade e a robustez dos testes existentes.
+
+## Melhorias Prioritárias para a Próxima Release
+
+- **Implementar persistência em banco de dados:** Substituir `TaskRepository` por uma implementação com SQLite (para desenvolvimento) ou PostgreSQL (para produção).
+- **Adicionar autenticação por API Key:** Proteger os endpoints de escrita (POST, PUT, DELETE) com um token de acesso simples.
+- **Isolar estado dos testes:** Garantir que cada teste de integração execute com um repositório limpo para evitar dependência entre eles.
+- **Implementar paginação:** Adicionar parâmetros `limit` e `offset` na rota de listagem de tarefas.

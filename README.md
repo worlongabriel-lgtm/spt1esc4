@@ -54,6 +54,7 @@ docs/                     # Documentação técnica
   escopo-mvp.md
   backlog.md
   diagrama-componentes.md
+  analise-de-riscos.md
 
 examples.py               # Script de exemplos em Python
 examples.http             # Exemplos REST Client
@@ -577,6 +578,23 @@ O repositório é mantido em memória durante a execução do processo da API. I
 - Sem pipeline de CI/CD
 - Sem configuração de deploy
 
+<<<<<<< HEAD
+=======
+## Gestão de Riscos
+
+O projeto adota um processo formal de gestão de riscos para garantir a transparência e o planejamento de melhorias críticas. A análise completa está documentada e segue um processo estruturado em quatro estágios:
+
+1.  **Identificação de Riscos:** Mapeamento de ameaças técnicas e operacionais.
+2.  **Análise Estruturada:** Classificação dos riscos por impacto e probabilidade.
+3.  **Estratégias de Resposta:** Definição de ações de mitigação, aceitação ou transferência.
+4.  **Comunicação:** Manter as partes interessadas informadas sobre os riscos e as ações planejadas.
+
+Os riscos mais críticos identificados no MVP são a **persistência de dados em memória** e a **ausência de autenticação**, ambos bloqueadores para um ambiente produtivo.
+
+> Para uma análise detalhada, consulte o documento:
+> **[📄 Documentação de Gestão de Riscos](./docs/RISK-ANALYSIS.md)**
+
+>>>>>>> origin/main
 ## Próximos Passos
 
 - Persistir tarefas em banco relacional (SQLite em desenvolvimento, PostgreSQL em produção)

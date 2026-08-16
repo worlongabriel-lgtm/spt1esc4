@@ -35,9 +35,25 @@ format_json() {
     fi
 }
 
+# Função para checar o status HTTP e encerrar em caso de erro
+check_status() {
+    local status_code=$1
+    local expected_code=$2
+    local message=$3
+
+    if [ "$status_code" -ne "$expected_code" ]; then
+        echo -e "\n${RED}ERRO: $message${NC}"
+        echo -e "${RED}Status esperado: $expected_code, Recebido: $status_code${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✓ OK (Status: $status_code)${NC}"
+}
+
 # 1. Health Check
 print_section "1. Health Check"
-print_command "curl -s -X GET $BASE_URL/health | jq"
+print_command "curl -s -o /dev/null -w \"%{http_code}\" -X GET $BASE_URL/health"
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/health")
+check_status "$STATUS" 200 "Health check falhou!"
 curl -s -X GET "$BASE_URL/health" | format_json
 
 # 2. Criar primeira tarefa (urgente)
@@ -50,11 +66,14 @@ TASK1_JSON=$(cat <<EOF
 }
 EOF
 )
-print_command "curl -s -X POST $BASE_URL/tasks -H \"Content-Type: application/json\" -d '$TASK1_JSON' | jq"
-TASK1=$(curl -s -X POST "$BASE_URL/tasks" \
+print_command "curl -s -w \"%{http_code}\" -X POST ... (cria tarefa urgente)"
+RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$BASE_URL/tasks" \
   -H "Content-Type: application/json" \
-  -d "$TASK1_JSON" | format_json)
-echo "$TASK1"
+  -d "$TASK1_JSON")
+STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+TASK1=$(echo "$RESPONSE" | sed '$d' | format_json)
+check_status "$STATUS" 201 "Falha ao criar tarefa 1"
+echo "$TASK1" | format_json
 
 # Extrair ID da primeira tarefa (usando jq se disponível)
 if command -v jq &> /dev/null; then
@@ -62,6 +81,7 @@ if command -v jq &> /dev/null; then
 else
     TASK1_ID=$(echo "$TASK1" | grep -o '"id":"[^"]*' | head -1 | cut -d'"' -f4)
 fi
+echo -e "${YELLOW}ID da Tarefa 1: $TASK1_ID${NC}"
 
 # 3. Criar segunda tarefa (alta prioridade)
 print_section "3. Criar tarefa com prazo"
@@ -73,10 +93,13 @@ TASK2_JSON=$(cat <<EOF
 }
 EOF
 )
-print_command "curl -s -X POST $BASE_URL/tasks -H \"Content-Type: application/json\" -d '$TASK2_JSON' | jq"
-curl -s -X POST "$BASE_URL/tasks" \
+print_command "curl -s -w \"%{http_code}\" -X POST ... (cria tarefa com prazo)"
+RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$BASE_URL/tasks" \
   -H "Content-Type: application/json" \
-  -d "$TASK2_JSON" | format_json
+  -d "$TASK2_JSON")
+STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+check_status "$STATUS" 201 "Falha ao criar tarefa 2"
+echo "$RESPONSE" | sed '$d' | format_json
 
 # 4. Criar terceira tarefa
 print_section "4. Criar tarefa simples"
@@ -87,10 +110,13 @@ TASK3_JSON=$(cat <<EOF
 }
 EOF
 )
-print_command "curl -s -X POST $BASE_URL/tasks -H \"Content-Type: application/json\" -d '$TASK3_JSON' | jq"
-curl -s -X POST "$BASE_URL/tasks" \
+print_command "curl -s -w \"%{http_code}\" -X POST ... (cria tarefa simples)"
+RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$BASE_URL/tasks" \
   -H "Content-Type: application/json" \
-  -d "$TASK3_JSON" | format_json
+  -d "$TASK3_JSON")
+STATUS=$(echo "$RESPONSE" | tail -n1 | cut -d':' -f2)
+check_status "$STATUS" 201 "Falha ao criar tarefa 3"
+echo "$RESPONSE" | sed '$d' | format_json
 
 # 5. Listar todas as tarefas
 print_section "5. Listar todas as tarefas"
@@ -133,8 +159,9 @@ EOF
 
     # 10. Deletar tarefa
     print_section "10. Deletar tarefa"
-    print_command "curl -s -i -X DELETE $BASE_URL/tasks/$TASK1_ID"
-    curl -s -i -X DELETE "$BASE_URL/tasks/$TASK1_ID"
+    print_command "curl -s -o /dev/null -w \"%{http_code}\" -X DELETE $BASE_URL/tasks/$TASK1_ID"
+    STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "$BASE_URL/tasks/$TASK1_ID")
+    check_status "$STATUS" 204 "Falha ao deletar tarefa"
 
     # 11. Tentar consultar tarefa deletada (deve retornar 404)
     print_section "11. Consultar tarefa deletada (deve retornar 404)"
