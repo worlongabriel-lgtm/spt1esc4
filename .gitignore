@@ -1,0 +1,19 @@
+# Ambientes Virtuais
+.venv/
+venv/
+env/
+
+# Variáveis de ambiente e segredos
+.env
+
+# Cache e artefatos Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Configurações de IDEs e OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
